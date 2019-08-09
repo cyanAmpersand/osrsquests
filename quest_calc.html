@@ -10,7 +10,7 @@ hide_completed = false
 hide_quests_required = false
 hide_skills_required = false
 hide_members = false
-sort_type = "alphabetical" //options are "in-game" "alphabetical" or "number"
+sort_type = "in-game" //options are "in-game" "alphabetical" or "number"
 
 quest_points = 0
 
@@ -2658,7 +2658,7 @@ all_quests = [
             ],
             "levels": [
                 {
-                    "skill": "combat",
+                    "skill": "combat_level",
                     "level": 85,
                     "boostable": false
                 }
@@ -3157,10 +3157,11 @@ function get_required_skills(quest_number){
 	all_s_reqs = get_quest_by_number(quest_number)["requirements"]["levels"]
 	remaining_s_reqs = []
 	for (sr = 0; sr < all_s_reqs.length; sr++){
-		if(skills[all_s_reqs[sr]["skill"]] < all_s_reqs[sr]["level"]){
-			remaining_s_reqs.push(all_s_reqs[sr])
-		}
 		if(all_s_reqs[sr]["skill"] == "quest_points" && all_s_reqs[sr]["level"] > quest_points){
+			remaining_s_reqs.push(all_s_reqs[sr])
+		} else if (all_s_reqs[sr]["skill"] == "combat_level" && all_s_reqs[sr]["level"] > combat_level) {
+			remaining_s_reqs.push(all_s_reqs[sr])
+		} else if (all_s_reqs[sr]["level"] > skills[all_s_reqs[sr]["skill"]]){
 			remaining_s_reqs.push(all_s_reqs[sr])
 		}
 	}
@@ -3213,6 +3214,17 @@ function load(){
 	}
 }
 
+//my girlfriend named this function
+function love_function(str){
+	if(str.startsWith("A ")){
+		return str.slice(2)
+	} else if (str.startsWith("The ")){
+		return str.slice(4)
+	} else {
+		return str
+	}
+}
+
 function sort_quests(sort_type){
 	quests = all_quests.slice(0)
 	console.log(quests)
@@ -3226,8 +3238,8 @@ function sort_quests(sort_type){
 		quests.sort(function(q1,q2){
 			if(q1["members"] && !q2["members"]){return 1}
 			if(!q1["members"] && q2["members"]){return -1}
-			if(q1["name"] > q2["name"]) {return 1}
-			if(q1["name"] < q2["name"]) {return -1}
+			if(love_function(q1["name"]) > love_function(q2["name"])) {return 1}
+			if(love_function(q1["name"]) < love_function(q2["name"])) {return -1}
 			return 0
 		})
 	}
@@ -3243,7 +3255,7 @@ function sort_quests(sort_type){
 				$("#questlist").append("Members' quests<br>")
 			}
 		}
-		$("#questlist").append("<div class='quest_div' id='quest_div_" + quests[i]["number"] + "'><input type='checkbox' onclick='refresh()' id='quest_check_" + i + "'><a href='" + quests[i]["url"] + "'>" + quests[i]["name"] + "</a></div>");
+		$("#questlist").append("<div class='quest_div' id='quest_div_" + quests[i]["number"] + "'><input type='checkbox' onclick='refresh()' id='quest_check_" + name_to_number(quests[i]["name"]) + "'><a href='" + quests[i]["url"] + "'>" + quests[i]["name"] + "</a></div>");
 		if(quest_completion[quests[i]["name"]]){
 			
 			document.getElementById("quest_check_"+i).checked = true
@@ -3276,7 +3288,7 @@ function refresh(){
 	magic_combat_level = 0.325*(Math.floor(3*skills["magic"]/2))
 	combat_level = Math.floor(base_combat_level + Math.max(melee_combat_level,range_combat_level,magic_combat_level))
 	for (i = 0; i < quests.length; i++){
-		quest_completed = document.getElementById("quest_check_"+i).checked
+		quest_completed = document.getElementById("quest_check_"+name_to_number(quests[i]["name"])).checked
 		if(quest_completed){
 			quest_points += quests[i]["quest_point_reward"]
 		}
@@ -3295,7 +3307,7 @@ function refresh(){
 		if((q_reqs.length == 0 && s_reqs.length == 0 && !quest_completed) && !(hide_members && quests[i]["members"])){
 			$("#available_quests").append(/*i + ". " +*/ "<a href='" + quests[i]["url"] + "'>" + quests[i]["name"] + "</a><br>")
 		}
-		if ((document.getElementById("quest_check_"+i).checked && hide_completed) || (hide_members && quests[i]["members"])){
+		if ((document.getElementById("quest_check_"+name_to_number(quests[i]["name"])).checked && hide_completed) || (hide_members && quests[i]["members"])){
 			$("#quest_div_"+i).css({display: "none"})
 		}
 		
