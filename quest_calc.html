@@ -3258,7 +3258,7 @@ function sort_quests(sort_type){
 		$("#questlist").append("<div class='quest_div' id='quest_div_" + quests[i]["number"] + "'><input type='checkbox' onclick='refresh()' id='quest_check_" + name_to_number(quests[i]["name"]) + "'><a href='" + quests[i]["url"] + "'>" + quests[i]["name"] + "</a></div>");
 		if(quest_completion[quests[i]["name"]]){
 			
-			document.getElementById("quest_check_"+i).checked = true
+			document.getElementById("quest_check_"+name_to_number(quests[i]["name"])).checked = true
 		}
 	}
 	
